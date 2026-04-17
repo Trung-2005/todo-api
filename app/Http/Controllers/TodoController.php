@@ -16,4 +16,46 @@ class TodoController extends Controller
             'data' => $todo
         ], 201);
     }
+
+    public function index() {
+        $todo = Todo::latest()->get();
+        return response()->json([
+            'success' => true,
+            'message' => 'Hiện thị dữ liệu trong bảng',
+            'data' => $todo
+        ], 201);
+    }
+
+    public function show($id) {
+        $todo = Todo::find($id);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Lấy từng dữ liệu trong bảng",
+            'data' => $todo
+        ], 201);
+    }
+
+    public function update(TodoRequest $request, $id) {
+        $todo = Todo::findOrFail($id); 
+        // Model instal
+        $todo->update($request->validated());
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật thông tin thành công',
+            'data' => $todo
+        ], 200);
+    }
+
+    public function destroy(Todo $todo) {
+        // $todo = Todo::findOrFail($id); néu dùng thêm dòng này thì đối số truyền vào sẽ như này: destroy($id) và các cả dòng này: $todo->delete();
+        // nếu viết mỗi $todo->delete(); thì đối số sẽ như trên và route cũng phải cùng tham số đó
+        $todo->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Xoá thành công',
+            'data' => null
+        ], 200);
+    }
 }

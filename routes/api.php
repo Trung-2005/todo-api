@@ -13,3 +13,9 @@ Route::get('/test', function() {
 });
 
 Route::post('/insert-todo', [TodoController::class, 'store']);
+
+// Bài 37:
+Route::get('/insert-todo', [TodoController::class, 'index']);
+Route::get('todo/{id}', [TodoController::class, 'show']);
+Route::put('todo/{id}', [TodoController::class, 'update']);
+Route::delete('todo/{todo}', [TodoController::class, 'destroy']); // {todo} -> phải giống tham số bên controller
