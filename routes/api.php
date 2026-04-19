@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ApiAuthController;
 use App\Http\Controllers\TodoController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,4 +23,13 @@ Route::get('/test', function() {
 
 // Bài 38: dùng resource route để tự động tạo ra các route cho các phương thức trong controller
 // thay vì viết 5 route như trên thì chỉ cần viết 1 dòng này là đủ
-Route::apiResource('todos', TodoController::class);
+// Route::apiResource('todos', TodoController::class);
+
+// Bài 41: API Authentication với Laravel Sanctum
+Route::post('/login', [ApiAuthController::class, 'login']);
+
+// Nhóm các route cần xác thực bằng token
+Route::middleware('auth:sanctum')->group(function() {
+    Route::get('/all-todo', [TodoController::class, 'index']);
+    Route::post('/logout', [ApiAuthController::class, 'logout']);
+});

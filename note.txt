@@ -2,16 +2,96 @@
 
 Gọi API => Controller => Model |API resources| => Response trả về cho client
 
-Phân biệt giữa API Resources - Route apiResource - Resource::resource
-- Route apiResource: là một phương thức dùng trên trình duyệt giúp tạo ra các route cho các phương thức trong controller
-    Syntax: Route::resource('photos', PhotoController::class);
-    Actions Handled:
-    - GET /photos (index)
-    - GET /photos/create (create)
-    - POST /photos (store)
-    - GET /photos/{photo} (show)
-    - GET /photos/{photo}/edit (edit)
-    - PUT/PATCH /photos/{photo} (update)
-    - DELETE /photos/{photo} (destroy)
--Route apiResource sẽ tự động tạo ra các route tương ứng với các phương thức trong controller nhưng chỉ sinh ra 5 route (index, store, show, update, destroy) mà không sinh ra route cho create và edit vì đây là 2 phương thức dùng để hiển thị form trên trình duyệt nên không cần thiết trong API
+Phân biệt giữa API Resources - Route::apiResource - Route::resource
+
+- Route::apiResource sẽ tự động tạo ra các route tương ứng với các phương thức trong controller nhưng chỉ sinh ra 5 route (index, store, show, update, destroy) mà không sinh ra route cho create và edit vì đây là 2 phương thức dùng để hiển thị form trên trình duyệt nên không cần thiết trong API
 - API Resources: là một lớp giúp định dạng dữ liệu trả về từ controller trước khi gửi
+
+- API Resources (class) dùng để chuyển đổi (transform) Eloquent Model thành JSON, cho phép kiểm soát dữ liệu trả về.
+- Route::apiResource (định tuyến) tạo các route CRUD (index, store, show, update, destroy) chuyên cho API.
+- Route::resource (định tuyến) tạo đầy đủ route (kể cả create, edit) phù hợp cho các web app dùng Blade view.
+
+Bảng So Sánh Chi tiết
+Đặc điểm          |	 API Resources            |	 Route::apiResource                  |	Route::resource
+Loại              |	 Lớp chuyển đổi (Class)	  |  Phương thức định tuyến              |	Phương thức định tuyến
+Mục đích          |  Format dữ liệu JSON	    |  Xây dựng API nhanh	                 |  Xây dựng Web/CRUD nhanh
+Routes được tạo	  |  N/A (chuyển đổi dữ liệu) |	 Index, Store, Show, Update, Delete	 |  Index, Create, Store, Show, Edit, Update, Delete
+Create/Edit Form  |	 N/A	                    |  Không tạo	                         |  Có tạo (HTML)
+Sử dụng tại	      |  Controller/Response	    |  routes/api.php	                     |  routes/web.php
+
+1. API Resources (Eloquent Resources)
+Chức năng: Là lớp trung gian giữa Eloquent Model và JSON response.
+Tại sao nên dùng: Giúp tùy chỉnh dữ liệu (xóa trường nhạy cảm, định dạng lại kiểu dữ liệu) trước khi trả về.
+Ví dụ: php artisan make:resource UserResource
+Sử dụng: return new UserResource(User::find(1)); 
+
+2. Route::apiResource()
+Chức năng: Tự động tạo 5 route RESTful cơ bản dành cho API:
+GET /users (index)
+POST /users (store)
+GET /users/{id} (show)
+PUT/PATCH /users/{id} (update)
+DELETE /users/{id} (destroy)
+Ưu điểm: Loại bỏ các route create và edit không cần thiết, giúp API gọn nhẹ và bảo mật hơn. 
+
+3. Route::resource()
+Chức năng: Tự động tạo 7 route RESTful chuẩn cho Web:
+Bao gồm 5 route của apiResource.
+Thêm GET /users/create (form tạo mới) và GET /users/{id}/edit (form sửa).
+Ưu điểm: Hoàn hảo khi làm việc với Blade templates, nơi cần render giao diện nhập liệu. 
+
+Tóm lại
+API Resources = Định dạng JSON.
+Route::apiResource = Chỉ có dữ liệu (API).
+Route::resource = Dữ liệu + Giao diện (Web).
+
+
+
+API Authentication (Xác thực API)
+1. API Authentication là gì?
+Xác thực API là quá trình xác minh danh tính của người dùng hoặc ứng dụng khi họ gửi yêu cầu đến API. Mục đích là đảm bảo rằng chỉ những người dùng hoặc ứng dụng được phép mới có thể truy cập vào tài nguyên của API.
+"Ai là người call API?"
+Client (font-end, mobile app, third-party service) gửi yêu cầu đến API.
+Server (back-end) nhận yêu cầu, xác thực và trả về dữ liệu hoặc lỗi.
+2. API Authentication khác gì với Authentication thông thường?
+Authentication thông thường thường liên quan đến việc đăng nhập người dùng trên một trang web, sử dụng session hoặc cookie để duy trì trạng thái đăng nhập.
+Trong khi đó, API Authentication thường sử dụng token (như JWT) hoặc khóa API để xác thực mà không cần duy trì trạng thái, phù hợp với kiến trúc RESTful.
+Khác nhau ở chỗ server nhớ bạn là ai?
+- Cách Authentication thông thường - web:
+  Khi bạn đăng nhập vào một trang web, server sẽ:
+    + tạo một session cho bạn và lưu thông tin này trên server hoặc cache.
+    + gửi một cookie chứa session ID về trình duyệt của bạn.
+    + Mỗi lần bạn gửi request tiếp theo, trình duyệt sẽ tự động gửi cookie này, server sẽ kiểm tra session ID để xác định bạn là ai và có quyền truy cập hay không.
+  => Server nhớ bạn là ai thông qua session và cookie.
+- Cách API Authentication:
+  Vì API thường dùng cho các ứng dụng không phải trình duyệt (mobile app, React/Vue Single-Page Applications (SPA), third-party service), nên không sử dụng session hay cookie.
+  Khi bạn đăng nhập vào một ứng dụng sử dụng API, server sẽ:
+    + Xác thực thông tin đăng nhập của bạn (ví dụ: username và password).
+    + Nếu hợp lệ, server sẽ tạo một token (như JWT) hoặc cung cấp một API key.
+    + Bạn sẽ gửi token này trong header của mỗi request tiếp theo (ví dụ: Authorization: Bearer <token>).
+    + Server sẽ kiểm tra token để xác định bạn là ai và có quyền truy cập hay không.
+  => Server không nhớ bạn là ai, mà dựa vào token để xác thực mỗi lần bạn gửi request.
+3. Các phương thức API Authentication phổ biến
+API Key Authentication: Sử dụng một khóa duy nhất để xác thực. Thường dùng cho các dịch vụ bên thứ ba.
+Basic Authentication: Sử dụng username và password được mã hóa trong header. Không an toàn nếu không sử dụng HTTPS.
+- Bearer Token Authentication: Sử dụng token (như JWT) để xác thực. Phổ biến trong các ứng dụng hiện đại (Laravel Sanctum).
+- Cookie-Based Authentication: Dùng cookie để duy trì trạng thái đăng nhập, thường không dùng cho API. (Sanctum SPA)
+- JWT (JSON Web Token): Một loại token chứa thông tin người dùng và có thể tự xác thực mà không cần truy vấn database. Phù hợp cho microservices và ứng dụng phân tán.
+- OAuth2 / OpenID Connect: Giao thức xác thực phức tạp hơn, thường dùng cho các ứng dụng lớn hoặc khi cần ủy quyền truy cập giữa các dịch vụ (Laravel Passport).
+
+
+
+Laravel Sanctum
+1. Kiến thức về Laravel Sanctum
+Sanctum là gì?**: Là một package của Laravel hỗ trợ xác thực cho API token (phù hợp với Mobile App/Postman) và xác thực SPA bằng cookie (phù hợp cho Vue/React chạy cùng domain).
+Bearer token: Được hiểu đơn giản là ai "cầm token" thì có quyền truy cập API; 
+Chuẩn gửi trong HTTP là `Authorization: Bearer <token>`.
+Personal Access Token: Là loại token gắn với một user cụ thể, được server cấp sau khi đăng nhập và lưu trong bảng `personal_access_tokens` của database.
+* **Cơ chế hoạt động**:
+    1. User Login -> Server tạo token và trả về client.
+    2. Client lưu token và gửi kèm trong header mỗi request API.
+    3. Middleware `auth:sanctum` kiểm tra tính hợp lệ của token trong database.
+    4. Nếu đúng, Laravel thiết lập thông tin user qua `$request->user()` và cho phép Controller chạy tiếp.
+* **Cài đặt**:
+    * Sử dụng lệnh: `composer require laravel/sanctum`.
+    * Publish cấu hình: `php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"`.
