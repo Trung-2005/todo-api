@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Todo;
 use Illuminate\Http\Request;
 use App\Http\Requests\TodoRequest;
+use App\Http\Resources\TodoResource;
 
 class TodoController extends Controller
 {
@@ -22,7 +23,8 @@ class TodoController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Hiện thị dữ liệu trong bảng',
-            'data' => $todo
+            'data' => TodoResource::collection($todo) // trả về dữ liệu sau khi đã được format bởi TodoResource
+            // conllection() dùng để trả về nhiều dữ liệu, nếu chỉ trả về 1 dữ liệu thì dùng new TodoResource($todo)
         ], 201);
     }
 
@@ -32,7 +34,7 @@ class TodoController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Lấy từng dữ liệu trong bảng",
-            'data' => $todo
+            'data' => new TodoResource($todo) 
         ], 201);
     }
 

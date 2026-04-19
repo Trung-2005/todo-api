@@ -1,0 +1,17 @@
+
+
+Gọi API => Controller => Model |API resources| => Response trả về cho client
+
+Phân biệt giữa API Resources - Route apiResource - Resource::resource
+- Route apiResource: là một phương thức dùng trên trình duyệt giúp tạo ra các route cho các phương thức trong controller
+    Syntax: Route::resource('photos', PhotoController::class);
+    Actions Handled:
+    - GET /photos (index)
+    - GET /photos/create (create)
+    - POST /photos (store)
+    - GET /photos/{photo} (show)
+    - GET /photos/{photo}/edit (edit)
+    - PUT/PATCH /photos/{photo} (update)
+    - DELETE /photos/{photo} (destroy)
+-Route apiResource sẽ tự động tạo ra các route tương ứng với các phương thức trong controller nhưng chỉ sinh ra 5 route (index, store, show, update, destroy) mà không sinh ra route cho create và edit vì đây là 2 phương thức dùng để hiển thị form trên trình duyệt nên không cần thiết trong API
+- API Resources: là một lớp giúp định dạng dữ liệu trả về từ controller trước khi gửi
