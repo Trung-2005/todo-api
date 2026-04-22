@@ -26,10 +26,13 @@ Route::get('/test', function() {
 // Route::apiResource('todos', TodoController::class);
 
 // Bài 41: API Authentication với Laravel Sanctum
-Route::post('/login', [ApiAuthController::class, 'login']);
+// Route::post('/login', [ApiAuthController::class, 'login']);
 
-// Nhóm các route cần xác thực bằng token
-Route::middleware('auth:sanctum')->group(function() {
-    Route::get('/all-todo', [TodoController::class, 'index']);
-    Route::post('/logout', [ApiAuthController::class, 'logout']);
-});
+// // Nhóm các route cần xác thực bằng token
+// Route::middleware('auth:sanctum')->group(function() {
+//     Route::get('/all-todo', [TodoController::class, 'index']);
+//     Route::post('/logout', [ApiAuthController::class, 'logout']);
+// });
+
+// Bài 43: Queue trong Laravel
+Route::apiResource('todos', TodoController::class);

@@ -6,11 +6,16 @@ use App\Models\Todo;
 use Illuminate\Http\Request;
 use App\Http\Requests\TodoRequest;
 use App\Http\Resources\TodoResource;
+use App\Jobs\ProcessTodoJob;
 
 class TodoController extends Controller
 {
     public function store(TodoRequest $request) {
         $todo = Todo::create($request->validated());
+
+        // đẩy job vào queue để xử lý sau khi insert thành công
+        ProcessTodoJob::dispatch($todo); // hoặc ProcessTodoJob::dispatch($todo)->delay(now()->addSeconds(10)); để trì hoãn job thêm 10 giây
+
         return response()->json([
             'success' => true,
             'message' => 'Test insert thành công',
